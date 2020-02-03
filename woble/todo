@@ -1,0 +1,11 @@
+Create player sprite
+Create player states
+    Still
+    Walking
+    Running
+    Sliding
+    Climbing
+    Jumping
+Create basic level with walls and ground to test states
+Elaborate on physics
+Scrolling based on player position on screen
