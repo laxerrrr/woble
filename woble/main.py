@@ -20,10 +20,10 @@ if woblestring == "woble\\SDL2-2.0.10-win32-x64":
                 if event.type == sdl2.SDL_QUIT:
                     running = False
                     break
-            window.refresh()
+                window.refresh()
         return 0
 
     if __name__ == "__main__":
         sys.exit(run())
-else:
-    print("Use 'cd wobble' in terminal to switch to the correct folder.")
+    else:
+        print("Use 'cd wobble' in terminal to switch to the correct folder.")
