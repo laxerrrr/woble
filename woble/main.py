@@ -24,4 +24,4 @@ if "main.py" and "SDL2-2.0.10-win32-x64" in contents :
     if __name__ == "__main__":
         sys.exit(run())
 else :
-    print("Use 'cd woble' in terminal to switch to the correct folder.")
+    print("Use 'cd woble' in terminal to switch to the correct folder. (For VS Code)")
