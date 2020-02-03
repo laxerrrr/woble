@@ -1,7 +1,7 @@
 import os
 import sys
 SDL2PATH = (os.getcwd() + "\\SDL2-2.0.10-win32-x64")
-woblestring = SDL2PATH[-27:]S
+woblestring = SDL2PATH[-27:]
 
 if woblestring == "woble\\SDL2-2.0.10-win32-x64":
     os.environ["PYSDL2_DLL_PATH"] = SDL2PATH
