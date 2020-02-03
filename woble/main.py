@@ -11,8 +11,18 @@ if "main.py" and "SDL2-2.0.10-win32-x64" in contents :
     def run():
         sdl2.ext.init() #Start SDL2
         window = sdl2.ext.Window("Woble [Alpha]", size=(800, 600))
+        #window.maximize() #Remove first hashtag when ready for game development
         window.show() #Show window
         running = True
+
+        factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE) #Sprite factory
+        sprite = factory.create_software_sprite(size=(500, 106), bpp=8)
+
+        spriterenderer = factory.create_sprite_render_system(window) #Sprite renderer
+        spriterenderer.render(sprite)
+
+
+
         while running:
             events = sdl2.ext.get_events()
             for event in events:
