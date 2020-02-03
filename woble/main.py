@@ -16,10 +16,10 @@ if "main.py" and "SDL2-2.0.10-win32-x64" in contents :
         running = True
 
         factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE) #Sprite factory
-        sprite = factory.create_software_sprite(size=(500, 106), bpp=8)
+        player = factory.create_software_sprite(size=(500, 106), bpp=8)
 
         spriterenderer = factory.create_sprite_render_system(window) #Sprite renderer
-        spriterenderer.render(sprite)
+        spriterenderer.render(player)
 
 
 
