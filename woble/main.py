@@ -1,11 +1,9 @@
 import os
 import sys
+contents = (os.listdir(os.getcwd()))
 SDL2PATH = (os.getcwd() + "\\SDL2-2.0.10-win32-x64")
-woblestring = SDL2PATH[-27:]
-
-if woblestring == "woble\\SDL2-2.0.10-win32-x64":
+if "main.py" and "SDL2-2.0.10-win32-x64" in contents :
     os.environ["PYSDL2_DLL_PATH"] = SDL2PATH
-    print(woblestring)
     import sdl2
     import sdl2.ext
 
@@ -25,5 +23,5 @@ if woblestring == "woble\\SDL2-2.0.10-win32-x64":
 
     if __name__ == "__main__":
         sys.exit(run())
-    else:
-        print("Use 'cd wobble' in terminal to switch to the correct folder.")
+else :
+    print("Use 'cd woble' in terminal to switch to the correct folder.")
