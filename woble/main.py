@@ -1,9 +1,13 @@
 import os
 import sys
+
 contents = (os.listdir(os.getcwd()))
 SDL2PATH = (os.getcwd() + "\\SDL2-2.0.10-win32-x64")
 if "main.py" and "SDL2-2.0.10-win32-x64" in contents : #Solely for development
     os.environ["PYSDL2_DLL_PATH"] = SDL2PATH
+
+
+
     #Importing SDL2
     import sdl2
     import sdl2.ext
@@ -16,6 +20,7 @@ if "main.py" and "SDL2-2.0.10-win32-x64" in contents : #Solely for development
             sdl2.ext.fill(self.surface, sdl2.ext.Color(200, 200, 123)) #Background of renderer
             super(Renderer, self).render(components) #Call SoftwareSpriteRenderSystem.render() when using Render.render()
     
+
     class Player (sdl2.ext.Entity) : #Player class
         def __init__(self, world, sprite, posx = 0, posy = 0):
             self.sprite = sprite #Given variable when making Player attribute to be associated with Player.sprite
