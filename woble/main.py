@@ -1,9 +1,15 @@
 import os
 import sys
-
+import struct
+pythonversion = (struct.calcsize("P") * 8)
 contents = (os.listdir(os.getcwd()))
-SDL2PATH = (os.getcwd() + "\\SDL2-2.0.10-win32-x64")
-if "main.py" and "SDL2-2.0.10-win32-x64" in contents : #Solely for development
+if (pythonversion == 32) :
+    sdlname = "SDL2-2.0.10-win32-x86"
+elif (pythonversion == 64) :
+    sdlname = "SDL2-2.0.10-win32-x64"
+
+SDL2PATH = (os.getcwd() + "\\" + sdlname)
+if "main.py" and sdlname in contents : #Solely for development
     os.environ["PYSDL2_DLL_PATH"] = SDL2PATH
 
 
@@ -15,10 +21,10 @@ if "main.py" and "SDL2-2.0.10-win32-x64" in contents : #Solely for development
     class Renderer (sdl2.ext.SoftwareSpriteRenderSystem) : #Renderer class for sprites
         def __init__(self, window):
             super(Renderer, self).__init__(window)
-        
-        def render(self, components):
-            sdl2.ext.fill(self.surface, sdl2.ext.Color(200, 200, 123)) #Background of renderer
-            super(Renderer, self).render(components) #Call SoftwareSpriteRenderSystem.render() when using Render.render()
+    
+    def render(self, components):
+        sdl2.ext.fill(self.surface, sdl2.ext.Color(200, 200, 123)) #Background of renderer
+        super(Renderer, self).render(components) #Call SoftwareSpriteRenderSystem.render() when using Render.render()
     
 
     class Player (sdl2.ext.Entity) : #Player class
@@ -27,7 +33,7 @@ if "main.py" and "SDL2-2.0.10-win32-x64" in contents : #Solely for development
             self.sprite.position = posx, posy #Set posx posy to player sprite position
 
 
-    #Main process for SDL2
+#Main process for SDL2
     def run():
         sdl2.ext.init() #Start SDL2
         window = sdl2.ext.Window("Woble [Alpha]", size=(800, 600))
@@ -35,7 +41,7 @@ if "main.py" and "SDL2-2.0.10-win32-x64" in contents : #Solely for development
         window.show() #Show window
         running = True
 
-        #Add anything here
+            #Add anything here
         renderer = Renderer(window)
         world = sdl2.ext.World()
         world.add_system(renderer)
