@@ -22,9 +22,9 @@ if "main.py" and sdlname in contents : #Solely for development
         def __init__(self, window):
             super(Renderer, self).__init__(window)
     
-    def render(self, components):
-        sdl2.ext.fill(self.surface, sdl2.ext.Color(200, 200, 123)) #Background of renderer
-        super(Renderer, self).render(components) #Call SoftwareSpriteRenderSystem.render() when using Render.render()
+        def render(self, components):
+            sdl2.ext.fill(self.surface, sdl2.ext.Color(200, 200, 123)) #Background of renderer
+            super(Renderer, self).render(components) #Call SoftwareSpriteRenderSystem.render() when using Render.render()
     
 
     class Player (sdl2.ext.Entity) : #Player class
