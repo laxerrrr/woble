@@ -2,6 +2,10 @@ import os
 import sys
 import struct
 import time
+import ctypes
+
+
+
 pythonversion = (struct.calcsize("P") * 8)
 contents = (os.listdir(os.getcwd()))
 if (pythonversion == 32) :
@@ -60,21 +64,58 @@ if "main.py" and sdlname in contents : #Solely for development
             super(Renderer, self).render(components) #Call SoftwareSpriteRenderSystem.render() when using Render.render()
     
 
-    class Player (sdl2.ext.Entity) : #Player class
+    class Player (sdl2.ext.Entity): #Player class
         def __init__(self, world, sprite, posx = 0, posy = 0):
             self.sprite = sprite #Given variable when making Player attribute to be associated with Player.sprite
-            self.sprite.position = posx, posy #Set posx posy to player sprite position
+            self.sprite.position = posx, posy
             self.velocity = Velocity()
+            
+    class GluedObject (sdl2.ext.Entity) : #GluedObject class
+        def __init__(self, world, sprite, posx = 0, posy = 0):
+            self.sprite = sprite 
+            self.sprite.position = posx, posy
+
+    class CollisionSystem(sdl2.ext.Applicator):
+        def __init__(self, minx, miny, maxx, maxy):
+            super(CollisionSystem, self).__init__()
+            self.componenttypes = Velocity, sdl2.ext.Sprite
+            self.player = None
+            self.minx = minx
+            self.miny = miny
+            self.maxx = maxx
+            self.maxy = maxy
+
+        def _overlap(self, item):
+            pos, sprite = item
+            if sprite == self.player.sprite:
+                return False
+
+            left, top, right, bottom = sprite.area
+            gleft, gtop, gright, gbottom = self.player.sprite.area
+
+            return (gleft < right and gright > left and gtop < bottom and gbottom > top)
+
+        def process(self, world, componentsets):
+            collitems = [comp for comp in componentsets if self._overlap(comp)]
+
+            if collitems:
+                print("----------------- ON FLOOR ---------------------")
+                self.player.velocity.vy = -self.player.velocity.vy
+
 
 #Main process for SDL2
     def run():
-        
         #Constants
         FPS = 30
         framecount = 0
-        jumpending = 0
-        jumping = False
+
+        lr = None
+
         jumpframe = 0
+        jumping = False
+
+        walkframe = 0
+        walking = False
 
         sdl2.ext.init() #Start SDL2
         window = sdl2.ext.Window("Woble [Alpha]", size=(800, 600))
@@ -84,23 +125,85 @@ if "main.py" and sdlname in contents : #Solely for development
 
             #Add anything here
         movement = MovementSystem(0, 0, 800, 600)
+        collision = CollisionSystem(0, 0, 800, 600)
         renderer = Renderer(window)
 
         world = sdl2.ext.World()
         world.add_system(movement)
+        world.add_system(collision)
         world.add_system(renderer)
 
         factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE) #Sprite maker
-        first = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(20, 20))
-        player = Player(world, first, 20, 460)
+        playersprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(20, 20))
+        floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 20))
+        player = Player(world, playersprite, 20, 260)
+
+        floor = GluedObject(world, floorsprite, 5, 500)
+
+        collision.player = player
 
         while running:
+            print("start")
+            player.velocity.vy = 1
             #print (framecount)
-            time.sleep(1/30)
+            #time.sleep(1/30)
+
+
             events = sdl2.ext.get_events()
 
-            #Events 
-            for event in events :
+            keystatus = sdl2.SDL_GetKeyboardState(None) #Key holds
+            if keystatus[sdl2.SDL_SCANCODE_LEFT]: #Left or right pressed
+                walking = True
+                lr = "left"
+                print (lr)
+            elif keystatus[sdl2.SDL_SCANCODE_RIGHT] :
+                walking = True
+                lr = "right"
+            elif keystatus[sdl2.SDL_SCANCODE_LEFT] and keystatus[sdl2.SDL_SCANCODE_RIGHT] == False :
+                walking = False
+
+            
+            #Jumping logic
+            if (jumping):
+                print ("Frame of jump is: " + str(jumpframe))
+                player.velocity.vy = -1* (((-1 * jumpframe) *jumpframe) + jumpframe + 15)
+                """print (player.velocity.vy)"""
+                jumpframe += 1
+
+            elif (jumping and walking): #Jumping with walking speed
+                print ("Frame of jump is: " + str(jumpframe))
+                player.velocity.vy = -1* (((-1 * jumpframe) *jumpframe) + jumpframe + 15)
+                #print (player.velocity.vy)
+                jumpframe += 1
+
+                if lr == "left":
+                    player.velocity.vx = -5
+                if lr == "right":
+                    player.velocity.vx = 5
+
+            if (jumpframe == 9):
+
+                print("JUMP's done (" + str(jumpframe) + ")")
+
+
+
+                jumpframe = 0
+                jumping = False
+            
+            #Walking logic
+            if (jumping == False and walking == True):
+                if lr == "left":
+                    player.velocity.vx = -5
+                if lr == "right":
+                    player.velocity.vx = 5
+
+                print (player.velocity.vx)
+
+            if walking == False :
+                player.velocity.vx = 0
+
+
+            for event in events : #Key press
                 if event.type == sdl2.SDL_QUIT:
                     running = False
                     break
@@ -109,31 +212,22 @@ if "main.py" and sdlname in contents : #Solely for development
 
                     if event.key.keysym.sym == sdl2.SDLK_UP: #Up (jumping)    
                         jumping = True
-                        jumpending = framecount + 20
+                    
                     elif event.key.keysym.sym == sdl2.SDLK_DOWN: #Down
-                        player.velocity.vy = 0
+                        print ("down")
                     
                     elif event.type == sdl2.SDL_KEYUP: #On any key release
                         if event.key.keysym.sym in (sdl2.SDLK_UP, sdl2.SDLK_DOWN):
                             player.velocity.vy = 0
-           
-            #Jumping logic
-            if (jumping == True):
-                print ("Frame of jump is: " + str(jumpframe))
-                player.velocity.vy = jumpframe * -jumpframe + (10*jumpframe)
-                player.velocity.vx = jumpframe
-                jumpframe += 1
-
-            if (jumpframe == 22):
-                print("WERE IN CAPTAIN")
-                jumpframe =- 1
-                player.velocity.vx = 0
-                player.velocity.vy = 0
-                jumping = False
 
             world.process()
             framecount = framecount + 1
-            print (framecount)
+            #print (framecount)
+            time.sleep(1/FPS)
+            #events = sdl2.ext.get_events()
+            print ("end") #dont put anything after this
+
+
         return 0
 
     if __name__ == "__main__":
