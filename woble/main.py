@@ -144,9 +144,6 @@ if "main.py" and sdlname in contents : #Solely for development
 
         while running:
             print("start")
-            player.velocity.vy = 1
-            #print (framecount)
-            #time.sleep(1/30)
 
 
             events = sdl2.ext.get_events()
@@ -159,7 +156,7 @@ if "main.py" and sdlname in contents : #Solely for development
             elif keystatus[sdl2.SDL_SCANCODE_RIGHT] :
                 walking = True
                 lr = "right"
-            elif keystatus[sdl2.SDL_SCANCODE_LEFT] and keystatus[sdl2.SDL_SCANCODE_RIGHT] == False :
+            elif keystatus[sdl2.SDL_SCANCODE_LEFT] == False and keystatus[sdl2.SDL_SCANCODE_RIGHT] == False :
                 walking = False
 
             
@@ -199,7 +196,7 @@ if "main.py" and sdlname in contents : #Solely for development
 
                 print (player.velocity.vx)
 
-            if walking == False :
+            if walking == False and jumping == False:
                 player.velocity.vx = 0
 
 
