@@ -1,0 +1,7 @@
+asks if its on floor and if it is then prints stuff
+finds keystrokes
+makes walking or jumping true based on keystrokes
+change velocities based on booleans
+process world
+add one frame to framecount
+sleep for 1/FPS

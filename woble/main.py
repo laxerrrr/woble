@@ -76,7 +76,7 @@ if "main.py" and sdlname in contents : #Solely for development
             self.sprite.position = posx, posy
 
     class CollisionSystem(sdl2.ext.Applicator):
-        def __init__(self, minx, miny, maxx, maxy):
+        def __init__(self, minx, miny, maxx, maxy, isonfloor):
             super(CollisionSystem, self).__init__()
             self.componenttypes = Velocity, sdl2.ext.Sprite
             self.player = None
@@ -84,6 +84,7 @@ if "main.py" and sdlname in contents : #Solely for development
             self.miny = miny
             self.maxx = maxx
             self.maxy = maxy
+            self.isonfloor = isonfloor
 
         def _overlap(self, item):
             pos, sprite = item
@@ -99,14 +100,14 @@ if "main.py" and sdlname in contents : #Solely for development
             collitems = [comp for comp in componentsets if self._overlap(comp)]
 
             if collitems:
-                print("----------------- ON FLOOR ---------------------")
-                self.player.velocity.vy = -self.player.velocity.vy
+                self.isonfloor = True
+                
 
 
 #Main process for SDL2
     def run():
         #Constants
-        FPS = 30
+        FPS = 8
         framecount = 0
 
         lr = None
@@ -125,7 +126,7 @@ if "main.py" and sdlname in contents : #Solely for development
 
             #Add anything here
         movement = MovementSystem(0, 0, 800, 600)
-        collision = CollisionSystem(0, 0, 800, 600)
+        collision = CollisionSystem(0, 0, 800, 600, False)
         renderer = Renderer(window)
 
         world = sdl2.ext.World()
@@ -144,7 +145,11 @@ if "main.py" and sdlname in contents : #Solely for development
 
         while running:
             print("start")
-
+            if (collision.isonfloor) :
+                jumping = False
+                print("it beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+            elif (collision.isonfloor == False) :
+                print ("aint beinnnnnnnnnn")
 
             events = sdl2.ext.get_events()
 
@@ -218,12 +223,11 @@ if "main.py" and sdlname in contents : #Solely for development
                             player.velocity.vy = 0
 
             world.process()
-            framecount = framecount + 1
+            framecount += 1
             #print (framecount)
             time.sleep(1/FPS)
             #events = sdl2.ext.get_events()
             print ("end") #dont put anything after this
-
 
         return 0
 
