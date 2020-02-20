@@ -77,7 +77,7 @@ if "main.py" and sdlname in contents : #Solely for development
             self.velocity = Velocity()
 
     class FloorSystem(sdl2.ext.Applicator):
-        def __init__(self, minx, miny, maxx, maxy, isonfloor):
+        def __init__(self, minx, miny, maxx, maxy, isonfloor = False):
             super(FloorSystem, self).__init__()
             self.componenttypes = Velocity, sdl2.ext.Sprite
             self.player = None
@@ -111,7 +111,9 @@ if "main.py" and sdlname in contents : #Solely for development
 
 #Main process for SDL2
     def run():
-        print("test")
+        print ("WOBLE LOG")
+
+
         #Constants
         FPS = 30
         framecount = 0
@@ -126,6 +128,8 @@ if "main.py" and sdlname in contents : #Solely for development
         walkframe = 0
         walking = False
 
+        landed = False
+
         sdl2.ext.init() #Start SDL2
         window = sdl2.ext.Window("Woble [Alpha]", size=(800, 600))
         #window.maximize() #Remove first hashtag when ready for game development
@@ -134,7 +138,7 @@ if "main.py" and sdlname in contents : #Solely for development
 
             #Add anything here
         movement = MovementSystem(0, 0, 800, 600)
-        floorsystem = FloorSystem(0, 0, 800, 600, False)
+        floorsystem = FloorSystem(0, 0, 800, 600)
         renderer = Renderer(window)
 
         world = sdl2.ext.World()
@@ -157,12 +161,18 @@ if "main.py" and sdlname in contents : #Solely for development
 
         while running:
             print("+++++ START of game loop +++++")
-            if (floorsystem.isonfloor) :
+            if (floorsystem.isonfloor and landed == False) :
                 player.velocity.vy = 0
                 print("it beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+                jumpframe = 0
+                jumping = False
+                landed = True
+
             elif (floorsystem.isonfloor == False) :
                 print ("IT IS NOT")
-
+                player.velocity.vy = fallingspeed
+                landed = False
+            
             events = sdl2.ext.get_events()
 
             keystatus = sdl2.SDL_GetKeyboardState(None) #Key holds
@@ -175,8 +185,6 @@ if "main.py" and sdlname in contents : #Solely for development
             elif keystatus[sdl2.SDL_SCANCODE_LEFT] == False and keystatus[sdl2.SDL_SCANCODE_RIGHT] == False :
                 walking = False
 
-            if floorsystem.isonfloor == False :
-                player.velocity.vy = fallingspeed
 
             #Jumping logic
             if (jumping):
@@ -200,7 +208,8 @@ if "main.py" and sdlname in contents : #Solely for development
 
                 print("JUMP's done (" + str(jumpframe) + ")")
 
-                player.velocity.vy = fallingspeed
+                if floorsystem.isonfloor == False :
+                    player.velocity.vy = fallingspeed
                 jumpframe = 0
                 jumping = False
             
