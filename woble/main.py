@@ -95,19 +95,17 @@ if "main.py" and sdlname in contents : #Solely for development
 
             left, top, right, bottom = sprite.area
             gleft, gtop, gright, gbottom = self.player.sprite.area
-            print (gbottom)
-            print (top)
             #print (str(gright))
 
-            return (gbottom >= top)
+            return (gbottom >= top and gright > left and gleft < right and gtop < bottom)
 
         def process(self, world, componentsets):
             collitems = [comp for comp in componentsets if self._overlap(comp)]
             if collitems:
                 self.isonfloor = True
-                
-            if collitems == False:
+            elif collitems == [] :
                 self.isonfloor = False
+            
                 
 
 
@@ -117,6 +115,8 @@ if "main.py" and sdlname in contents : #Solely for development
         #Constants
         FPS = 30
         framecount = 0
+
+        fallingspeed = 5
 
         lr = None
 
@@ -146,8 +146,10 @@ if "main.py" and sdlname in contents : #Solely for development
 
         playersprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(20, 20))
         floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 10))
+        floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
 
         floor = GluedObject(world, floorsprite, 5, 400)
+        floor2 = GluedObject(world, floor2sprite, 200, 375)
         player = Player(world, playersprite, 20, 100)
 
         floorsystem.player = player
@@ -173,7 +175,9 @@ if "main.py" and sdlname in contents : #Solely for development
             elif keystatus[sdl2.SDL_SCANCODE_LEFT] == False and keystatus[sdl2.SDL_SCANCODE_RIGHT] == False :
                 walking = False
 
-            
+            if floorsystem.isonfloor == False :
+                player.velocity.vy = fallingspeed
+
             #Jumping logic
             if (jumping):
                 print ("Frame of jump is: " + str(jumpframe))
@@ -192,11 +196,11 @@ if "main.py" and sdlname in contents : #Solely for development
                 if lr == "right":
                     player.velocity.vx = 5
 
-            if (jumpframe == 8):
+            if (jumpframe == 9):
 
                 print("JUMP's done (" + str(jumpframe) + ")")
 
-                player.velocity.vy = 5
+                player.velocity.vy = fallingspeed
                 jumpframe = 0
                 jumping = False
             
