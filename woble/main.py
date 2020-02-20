@@ -115,10 +115,10 @@ if "main.py" and sdlname in contents : #Solely for development
 
 
         #Constants
-        FPS = 30
+        FPS = 8
         framecount = 0
 
-        fallingspeed = 5
+        fallingspeed = 2
 
         lr = None
 
@@ -153,7 +153,7 @@ if "main.py" and sdlname in contents : #Solely for development
         floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
 
         floor = GluedObject(world, floorsprite, 5, 400)
-        floor2 = GluedObject(world, floor2sprite, 200, 375)
+        floor2 = GluedObject(world, floor2sprite, 200, 380)
         player = Player(world, playersprite, 20, 100)
 
         floorsystem.player = player
@@ -187,22 +187,22 @@ if "main.py" and sdlname in contents : #Solely for development
 
 
             #Jumping logic
-            if (jumping):
+            if (jumping) :
                 print ("Frame of jump is: " + str(jumpframe))
-                player.velocity.vy = -1* (((-1 * jumpframe) *jumpframe) + jumpframe + 15)
+                player.velocity.vy = -2* (((-1 * jumpframe) *jumpframe) + jumpframe + 10)
                 """print (player.velocity.vy)"""
                 jumpframe += 1
 
             elif (jumping and walking): #Jumping with walking speed
                 print ("Frame of jump is: " + str(jumpframe))
-                player.velocity.vy = -1* (((-1 * jumpframe) *jumpframe) + jumpframe + 15)
+                player.velocity.vy = -2* (((-1 * jumpframe) *jumpframe) + jumpframe + 10)
                 #print (player.velocity.vy)
                 jumpframe += 1
 
                 if lr == "left":
-                    player.velocity.vx = -5
+                    player.velocity.vx = -10
                 if lr == "right":
-                    player.velocity.vx = 5
+                    player.velocity.vx = 10
 
             if (jumpframe == 9):
 
@@ -216,9 +216,9 @@ if "main.py" and sdlname in contents : #Solely for development
             #Walking logic
             if (jumping == False and walking == True):
                 if lr == "left":
-                    player.velocity.vx = -5
+                    player.velocity.vx = -10
                 if lr == "right":
-                    player.velocity.vx = 5
+                    player.velocity.vx = 10
 
                 print ("VX = " + str(player.velocity.vx))
 
