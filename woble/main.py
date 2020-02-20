@@ -74,10 +74,11 @@ if "main.py" and sdlname in contents : #Solely for development
         def __init__(self, world, sprite, posx = 0, posy = 0):
             self.sprite = sprite 
             self.sprite.position = posx, posy
+            self.velocity = Velocity()
 
-    class CollisionSystem(sdl2.ext.Applicator):
+    class FloorSystem(sdl2.ext.Applicator):
         def __init__(self, minx, miny, maxx, maxy, isonfloor):
-            super(CollisionSystem, self).__init__()
+            super(FloorSystem, self).__init__()
             self.componenttypes = Velocity, sdl2.ext.Sprite
             self.player = None
             self.minx = minx
@@ -88,26 +89,33 @@ if "main.py" and sdlname in contents : #Solely for development
 
         def _overlap(self, item):
             pos, sprite = item
+            
             if sprite == self.player.sprite:
                 return False
 
             left, top, right, bottom = sprite.area
             gleft, gtop, gright, gbottom = self.player.sprite.area
+            print (gbottom)
+            print (top)
+            #print (str(gright))
 
-            return (gleft < right and gright > left and gtop < bottom and gbottom > top)
+            return (gbottom >= top)
 
         def process(self, world, componentsets):
             collitems = [comp for comp in componentsets if self._overlap(comp)]
-
             if collitems:
                 self.isonfloor = True
+                
+            if collitems == False:
+                self.isonfloor = False
                 
 
 
 #Main process for SDL2
     def run():
+        print("test")
         #Constants
-        FPS = 8
+        FPS = 30
         framecount = 0
 
         lr = None
@@ -126,30 +134,32 @@ if "main.py" and sdlname in contents : #Solely for development
 
             #Add anything here
         movement = MovementSystem(0, 0, 800, 600)
-        collision = CollisionSystem(0, 0, 800, 600, False)
+        floorsystem = FloorSystem(0, 0, 800, 600, False)
         renderer = Renderer(window)
 
         world = sdl2.ext.World()
         world.add_system(movement)
-        world.add_system(collision)
+        world.add_system(floorsystem)
         world.add_system(renderer)
 
         factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE) #Sprite maker
+
         playersprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(20, 20))
-        floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 20))
-        player = Player(world, playersprite, 20, 260)
+        floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 10))
 
-        floor = GluedObject(world, floorsprite, 5, 500)
+        floor = GluedObject(world, floorsprite, 5, 400)
+        player = Player(world, playersprite, 20, 100)
 
-        collision.player = player
+        floorsystem.player = player
+        
 
         while running:
-            print("start")
-            if (collision.isonfloor) :
-                jumping = False
+            print("+++++ START of game loop +++++")
+            if (floorsystem.isonfloor) :
+                player.velocity.vy = 0
                 print("it beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-            elif (collision.isonfloor == False) :
-                print ("aint beinnnnnnnnnn")
+            elif (floorsystem.isonfloor == False) :
+                print ("IT IS NOT")
 
             events = sdl2.ext.get_events()
 
@@ -157,7 +167,6 @@ if "main.py" and sdlname in contents : #Solely for development
             if keystatus[sdl2.SDL_SCANCODE_LEFT]: #Left or right pressed
                 walking = True
                 lr = "left"
-                print (lr)
             elif keystatus[sdl2.SDL_SCANCODE_RIGHT] :
                 walking = True
                 lr = "right"
@@ -183,12 +192,11 @@ if "main.py" and sdlname in contents : #Solely for development
                 if lr == "right":
                     player.velocity.vx = 5
 
-            if (jumpframe == 9):
+            if (jumpframe == 8):
 
                 print("JUMP's done (" + str(jumpframe) + ")")
 
-
-
+                player.velocity.vy = 5
                 jumpframe = 0
                 jumping = False
             
@@ -199,7 +207,7 @@ if "main.py" and sdlname in contents : #Solely for development
                 if lr == "right":
                     player.velocity.vx = 5
 
-                print (player.velocity.vx)
+                print ("VX = " + str(player.velocity.vx))
 
             if walking == False and jumping == False:
                 player.velocity.vx = 0
@@ -218,16 +226,14 @@ if "main.py" and sdlname in contents : #Solely for development
                     elif event.key.keysym.sym == sdl2.SDLK_DOWN: #Down
                         print ("down")
                     
-                    elif event.type == sdl2.SDL_KEYUP: #On any key release
-                        if event.key.keysym.sym in (sdl2.SDLK_UP, sdl2.SDLK_DOWN):
-                            player.velocity.vy = 0
 
             world.process()
             framecount += 1
             #print (framecount)
             time.sleep(1/FPS)
             #events = sdl2.ext.get_events()
-            print ("end") #dont put anything after this
+            print ("----- END of game loop -----")
+            print (" ") #dont put anything after this
 
         return 0
 
