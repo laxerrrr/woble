@@ -103,6 +103,7 @@ if "main.py" and sdlname in contents : #Solely for development
             collitems = [comp for comp in componentsets if self._overlap(comp)]
             if collitems:
                 self.isonfloor = True
+                
             elif collitems == [] :
                 self.isonfloor = False
             
@@ -115,10 +116,10 @@ if "main.py" and sdlname in contents : #Solely for development
 
 
         #Constants
-        FPS = 8
+        FPS = 10
         framecount = 0
 
-        fallingspeed = 2
+        fallingspeed = 10
 
         lr = None
 
@@ -152,8 +153,8 @@ if "main.py" and sdlname in contents : #Solely for development
         floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 10))
         floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
 
-        floor = GluedObject(world, floorsprite, 5, 400)
-        floor2 = GluedObject(world, floor2sprite, 200, 380)
+        floor = GluedObject(world, floorsprite, 5, 200)
+        floor2 = GluedObject(world, floor2sprite, 200, 250)
         player = Player(world, playersprite, 20, 100)
 
         floorsystem.player = player
@@ -162,14 +163,16 @@ if "main.py" and sdlname in contents : #Solely for development
         while running:
             print("+++++ START of game loop +++++")
             if (floorsystem.isonfloor and landed == False) :
-                player.velocity.vy = 0
-                print("it beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+                print (player.sprite.position[1])
+                print (floor.sprite.position[1])
+                #player.velocity.vy = (player.sprite.position[1] - floor.sprite.position[1])
+                print("LANDED")
                 jumpframe = 0
                 jumping = False
                 landed = True
 
             elif (floorsystem.isonfloor == False) :
-                print ("IT IS NOT")
+                print ("IN THE AIR")
                 player.velocity.vy = fallingspeed
                 landed = False
             
@@ -189,14 +192,14 @@ if "main.py" and sdlname in contents : #Solely for development
             #Jumping logic
             if (jumping) :
                 print ("Frame of jump is: " + str(jumpframe))
-                player.velocity.vy = -2* (((-1 * jumpframe) *jumpframe) + jumpframe + 10)
-                """print (player.velocity.vy)"""
+                player.velocity.vy = round((-2/3)* (((-1 * jumpframe) *jumpframe) + 9 * jumpframe))
+                print (player.velocity.vy)
                 jumpframe += 1
 
             elif (jumping and walking): #Jumping with walking speed
                 print ("Frame of jump is: " + str(jumpframe))
-                player.velocity.vy = -2* (((-1 * jumpframe) *jumpframe) + jumpframe + 10)
-                #print (player.velocity.vy)
+                player.velocity.vy = round(-2/3* (((-1 * jumpframe) *jumpframe) + 9 * jumpframe))
+                print (player.velocity.vy)
                 jumpframe += 1
 
                 if lr == "left":
@@ -204,7 +207,7 @@ if "main.py" and sdlname in contents : #Solely for development
                 if lr == "right":
                     player.velocity.vx = 10
 
-            if (jumpframe == 9):
+            if (jumpframe == 13):
 
                 print("JUMP's done (" + str(jumpframe) + ")")
 
@@ -221,8 +224,8 @@ if "main.py" and sdlname in contents : #Solely for development
                     player.velocity.vx = 10
 
                 print ("VX = " + str(player.velocity.vx))
-
-            if walking == False and jumping == False:
+            
+            if jumping == False and walking == False :
                 player.velocity.vx = 0
 
 
