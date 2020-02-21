@@ -81,11 +81,13 @@ if "main.py" and sdlname in contents : #Solely for development
             super(FloorSystem, self).__init__()
             self.componenttypes = Velocity, sdl2.ext.Sprite
             self.player = None
+            self.itemhit = None
             self.minx = minx
             self.miny = miny
             self.maxx = maxx
             self.maxy = maxy
             self.isonfloor = isonfloor
+
 
         def _overlap(self, item):
             pos, sprite = item
@@ -96,12 +98,12 @@ if "main.py" and sdlname in contents : #Solely for development
             left, top, right, bottom = sprite.area
             gleft, gtop, gright, gbottom = self.player.sprite.area
             #print (str(gright))
-
             return (gbottom >= top and gright > left and gleft < right and gtop < bottom)
 
         def process(self, world, componentsets):
             collitems = [comp for comp in componentsets if self._overlap(comp)]
             if collitems:
+                self.itemhit = collitems
                 self.isonfloor = True
                 
             elif collitems == [] :
@@ -115,8 +117,8 @@ if "main.py" and sdlname in contents : #Solely for development
         print ("WOBLE LOG")
 
 
-        #Constants
-        FPS = 10
+        #Constants and variables
+        FPS = 5
         framecount = 0
 
         fallingspeed = 10
@@ -130,6 +132,7 @@ if "main.py" and sdlname in contents : #Solely for development
         walking = False
 
         landed = False
+        reset = False
 
         sdl2.ext.init() #Start SDL2
         window = sdl2.ext.Window("Woble [Alpha]", size=(800, 600))
@@ -158,23 +161,9 @@ if "main.py" and sdlname in contents : #Solely for development
         player = Player(world, playersprite, 20, 100)
 
         floorsystem.player = player
-        
 
         while running:
             print("+++++ START of game loop +++++")
-            if (floorsystem.isonfloor and landed == False) :
-                print (player.sprite.position[1])
-                print (floor.sprite.position[1])
-                #player.velocity.vy = (player.sprite.position[1] - floor.sprite.position[1])
-                print("LANDED")
-                jumpframe = 0
-                jumping = False
-                landed = True
-
-            elif (floorsystem.isonfloor == False) :
-                print ("IN THE AIR")
-                player.velocity.vy = fallingspeed
-                landed = False
             
             events = sdl2.ext.get_events()
 
@@ -207,7 +196,7 @@ if "main.py" and sdlname in contents : #Solely for development
                 if lr == "right":
                     player.velocity.vx = 10
 
-            if (jumpframe == 13):
+            if (jumpframe == 12):
 
                 print("JUMP's done (" + str(jumpframe) + ")")
 
@@ -241,7 +230,40 @@ if "main.py" and sdlname in contents : #Solely for development
                     
                     elif event.key.keysym.sym == sdl2.SDLK_DOWN: #Down
                         print ("down")
-                    
+            
+            if landed and reset == False : #Immobilizing player after position reset
+                player.velocity.vy = 0
+                landed = False
+                reset = True
+                print("Immobilized")
+            
+            elif (floorsystem.isonfloor and landed == False and reset == False) : #Resetting player position to be on top of floor
+
+                left, top, right, bottom = floor.sprite.area
+                pleft, ptop, pright, pbottom = player.sprite.area
+
+                print (player.sprite.position[1])
+                print (floor.sprite.position[1])
+                player.velocity.vy = (top - pbottom)
+                print ("Reset frame velocity = " + str(player.velocity.vy))
+                print("LANDED")
+                jumpframe = 0
+                jumping = False
+                landed = True
+                reset = False
+                print("Reset")
+
+            elif (floorsystem.isonfloor == False and jumping == False) : #If falling
+                print ("IN THE AIR")
+                player.velocity.vy = fallingspeed
+                landed = False
+                reset = False
+            
+            elif (floorsystem.isonfloor == False and jumping) : #If player is jumping and not on floor
+                print ("IN THE AIR")
+                landed = False
+
+            print (floorsystem.itemhit)
 
             world.process()
             framecount += 1
