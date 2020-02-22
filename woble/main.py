@@ -2,8 +2,7 @@ import os
 import sys
 import struct
 import time
-import ctypes
-
+import gc
 
 
 pythonversion = (struct.calcsize("P") * 8)
@@ -75,6 +74,7 @@ if "main.py" and sdlname in contents : #Solely for development
             self.sprite = sprite 
             self.sprite.position = posx, posy
             self.velocity = Velocity()
+            self.id = None
 
     class FloorSystem(sdl2.ext.Applicator):
         def __init__(self, minx, miny, maxx, maxy, isonfloor = False):
@@ -82,6 +82,7 @@ if "main.py" and sdlname in contents : #Solely for development
             self.componenttypes = Velocity, sdl2.ext.Sprite
             self.player = None
             self.itemhit = None
+            self.floor = None
             self.minx = minx
             self.miny = miny
             self.maxx = maxx
@@ -97,13 +98,13 @@ if "main.py" and sdlname in contents : #Solely for development
 
             left, top, right, bottom = sprite.area
             gleft, gtop, gright, gbottom = self.player.sprite.area
-            #print (str(gright))
+            self.floor = item
             return (gbottom >= top and gright > left and gleft < right and gtop < bottom)
 
         def process(self, world, componentsets):
             collitems = [comp for comp in componentsets if self._overlap(comp)]
             if collitems:
-                self.itemhit = collitems
+                self.itemhit = collitems[0]
                 self.isonfloor = True
                 
             elif collitems == [] :
@@ -118,7 +119,7 @@ if "main.py" and sdlname in contents : #Solely for development
 
 
         #Constants and variables
-        FPS = 5
+        FPS = 30
         framecount = 0
 
         fallingspeed = 10
@@ -162,9 +163,10 @@ if "main.py" and sdlname in contents : #Solely for development
 
         floorsystem.player = player
 
+        floors = [o for o in gc.get_objects() if type(o).__name__ == "GluedObject"]
+
         while running:
             print("+++++ START of game loop +++++")
-            
             events = sdl2.ext.get_events()
 
             keystatus = sdl2.SDL_GetKeyboardState(None) #Key holds
@@ -238,12 +240,14 @@ if "main.py" and sdlname in contents : #Solely for development
                 print("Immobilized")
             
             elif (floorsystem.isonfloor and landed == False and reset == False) : #Resetting player position to be on top of floor
+                floor_ = None
+                for x in floors :
+                    if (x.velocity == floorsystem.itemhit[0]) :
+                        floor_ = x
 
-                left, top, right, bottom = floor.sprite.area
+                left, top, right, bottom = floor_.sprite.area
                 pleft, ptop, pright, pbottom = player.sprite.area
 
-                print (player.sprite.position[1])
-                print (floor.sprite.position[1])
                 player.velocity.vy = (top - pbottom)
                 print ("Reset frame velocity = " + str(player.velocity.vy))
                 print("LANDED")
@@ -262,8 +266,6 @@ if "main.py" and sdlname in contents : #Solely for development
             elif (floorsystem.isonfloor == False and jumping) : #If player is jumping and not on floor
                 print ("IN THE AIR")
                 landed = False
-
-            print (floorsystem.itemhit)
 
             world.process()
             framecount += 1
