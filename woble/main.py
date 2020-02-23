@@ -1,8 +1,19 @@
-import os
-import sys
-import struct
-import time
-import gc
+"""
+ __      __         _       _        
+ \ \    / /  ___   | |__   | |   ___ 
+  \ \/\/ /  / _ \  | '_ \  | |  / -_)
+   \_/\_/   \___/  |_.__/  |_|  \___|
+
+    Made with PySDL2
+    
+    by Xavier Savoie and Ian Dauphinée
+
+"""
+import os #Used to get current directory
+import sys #Used to exit
+import struct #Used to check if system is 32 bit or 64 bit
+import time #Used for time.sleep to regulate FPS
+import gc #Used to fetch all objects in program
 
 
 pythonversion = (struct.calcsize("P") * 8)
