@@ -69,7 +69,7 @@ if "main.py" and sdlname in contents : #Solely for development
             self.sprite.position = posx, posy
             self.velocity = Velocity()
             
-    class GluedObject (sdl2.ext.Entity) : #GluedObject class
+    class Floor (sdl2.ext.Entity) : #Floor class
         def __init__(self, world, sprite, posx = 0, posy = 0):
             self.sprite = sprite 
             self.sprite.position = posx, posy
@@ -157,17 +157,34 @@ if "main.py" and sdlname in contents : #Solely for development
         floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 10))
         floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
 
-        floor = GluedObject(world, floorsprite, 5, 200)
-        floor2 = GluedObject(world, floor2sprite, 200, 250)
+        floor = Floor(world, floorsprite, 5, 200)
+        floor2 = Floor(world, floor2sprite, 200, 250)
         player = Player(world, playersprite, 20, 100)
 
         floorsystem.player = player
 
-        floors = [o for o in gc.get_objects() if type(o).__name__ == "GluedObject"]
+        floors = [o for o in gc.get_objects() if type(o).__name__ == "Floor"] #Gets all Floor objects from program and puts them in an array
+
 
         while running:
             print("+++++ START of game loop +++++")
-            events = sdl2.ext.get_events()
+
+
+            """ *** Events *** """
+
+            events = sdl2.ext.get_events() #Gets all external events
+            for event in events : #Key press
+                if event.type == sdl2.SDL_QUIT:
+                    running = False
+                    break
+
+                if event.type == sdl2.SDL_KEYDOWN: #On any key press
+
+                    if event.key.keysym.sym == sdl2.SDLK_UP: #Up (jumping)    
+                        jumping = True
+                    
+                    elif event.key.keysym.sym == sdl2.SDLK_DOWN: #Down
+                        print ("down")
 
             keystatus = sdl2.SDL_GetKeyboardState(None) #Key holds
             if keystatus[sdl2.SDL_SCANCODE_LEFT]: #Left or right pressed
@@ -179,9 +196,24 @@ if "main.py" and sdlname in contents : #Solely for development
             elif keystatus[sdl2.SDL_SCANCODE_LEFT] == False and keystatus[sdl2.SDL_SCANCODE_RIGHT] == False :
                 walking = False
 
+            
+            """ *** Walking logic *** """
 
-            #Jumping logic
-            if (jumping) :
+            if (jumping == False and walking == True):
+                if lr == "left":
+                    player.velocity.vx = -10
+                if lr == "right":
+                    player.velocity.vx = 10
+
+                print ("VX = " + str(player.velocity.vx))
+            
+            if jumping == False and walking == False :
+                player.velocity.vx = 0
+
+
+            """ *** Jumping logic *** """
+
+            if (jumping) : #Jumping
                 print ("Frame of jump is: " + str(jumpframe))
                 player.velocity.vy = round((-2/3)* (((-1 * jumpframe) *jumpframe) + 9 * jumpframe))
                 print (player.velocity.vy)
@@ -207,31 +239,7 @@ if "main.py" and sdlname in contents : #Solely for development
                 jumpframe = 0
                 jumping = False
             
-            #Walking logic
-            if (jumping == False and walking == True):
-                if lr == "left":
-                    player.velocity.vx = -10
-                if lr == "right":
-                    player.velocity.vx = 10
-
-                print ("VX = " + str(player.velocity.vx))
-            
-            if jumping == False and walking == False :
-                player.velocity.vx = 0
-
-
-            for event in events : #Key press
-                if event.type == sdl2.SDL_QUIT:
-                    running = False
-                    break
-
-                if event.type == sdl2.SDL_KEYDOWN: #On any key press
-
-                    if event.key.keysym.sym == sdl2.SDLK_UP: #Up (jumping)    
-                        jumping = True
-                    
-                    elif event.key.keysym.sym == sdl2.SDLK_DOWN: #Down
-                        print ("down")
+            """ *** Resetting and immobilizing logic for landing from fall or jump on floor *** """
             
             if landed and reset == False : #Immobilizing player after position reset
                 player.velocity.vy = 0
@@ -240,11 +248,12 @@ if "main.py" and sdlname in contents : #Solely for development
                 print("Immobilized")
             
             elif (floorsystem.isonfloor and landed == False and reset == False) : #Resetting player position to be on top of floor
+
                 floor_ = None
                 for x in floors :
-                    if (x.velocity == floorsystem.itemhit[0]) :
-                        floor_ = x
-
+                    if (x.velocity == floorsystem.itemhit[0]) : #If the velocity ID from a floor object in the
+                        floor_ = x                              #floors array is equal to the velocity ID of the object hit
+                                                                #then set floor_ to be that object (for resetting logic)
                 left, top, right, bottom = floor_.sprite.area
                 pleft, ptop, pright, pbottom = player.sprite.area
 
@@ -267,11 +276,13 @@ if "main.py" and sdlname in contents : #Solely for development
                 print ("IN THE AIR")
                 landed = False
 
-            world.process()
-            framecount += 1
-            #print (framecount)
-            time.sleep(1/FPS)
-            #events = sdl2.ext.get_events()
+
+            world.process() #Process objects in world
+
+            framecount += 1 #Ongoing framecount for movement logic
+
+            time.sleep(1/FPS) #Constant framerate
+
             print ("----- END of game loop -----")
             print (" ") #dont put anything after this
 
