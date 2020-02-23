@@ -24,14 +24,16 @@ elif (pythonversion == 64) :
     sdlname = "SDL2-2.0.10-win32-x64"
 
 SDL2PATH = (os.getcwd() + "\\" + sdlname)
+
 if "main.py" and sdlname in contents : #Solely for development
     os.environ["PYSDL2_DLL_PATH"] = SDL2PATH
 
     #Importing SDL2
+
     import sdl2
     import sdl2.ext
-    #Custom classes for game
 
+    #Custom classes for game
 
     class Velocity(object):
         def __init__(self):
@@ -86,8 +88,55 @@ if "main.py" and sdlname in contents : #Solely for development
             self.sprite.position = posx, posy
             self.velocity = Velocity()
 
+    class Wall (sdl2.ext.Entity) : #Wall class
+        def __init__(self, world, sprite, posx = 0, posy = 0):
+            self.sprite = sprite 
+            self.sprite.position = posx, posy
+            self.velocity = Velocity()
+
+    class WallSystem(sdl2.ext.Applicator):
+        def __init__(self, minx, miny, maxx, maxy, touchedwall = False):
+            super(WallSystem, self).__init__()
+            self.componenttypes = Velocity, sdl2.ext.Sprite
+            self.player = None
+            self.itemhit = None
+            self.wall = None
+            self.side = None
+            self.minx = minx
+            self.miny = miny
+            self.maxx = maxx
+            self.maxy = maxy
+            self.touchedwall = touchedwall
+            self.floorsarray = None
+
+        def _overlap(self, item):
+            pos, sprite = item
+
+            x = 0
+            while x < len(self.floorsarray) :
+                if self.floorsarray[x].velocity == item[0] :
+                    return False
+                x += 1
+
+            if sprite == self.player.sprite:
+                return False
+
+            left, top, right, bottom = sprite.area
+            pleft, ptop, pright, pbottom = self.player.sprite.area
+            self.wall = item
+            return ((pleft < right and pright > left) or (pright > left and pleft < right))
+
+        def process(self, world, componentsets):
+            collitems = [comp for comp in componentsets if self._overlap(comp)]
+            if collitems:
+                self.itemhit = collitems[0]
+                self.touchedwall = True
+                
+            elif collitems == [] :
+                self.touchedwall = False
+
     class FloorSystem(sdl2.ext.Applicator):
-        def __init__(self, minx, miny, maxx, maxy, isonfloor = False):
+        def __init__(self, minx, miny, maxx, maxy):
             super(FloorSystem, self).__init__()
             self.componenttypes = Velocity, sdl2.ext.Sprite
             self.player = None
@@ -97,19 +146,24 @@ if "main.py" and sdlname in contents : #Solely for development
             self.miny = miny
             self.maxx = maxx
             self.maxy = maxy
-            self.isonfloor = isonfloor
-
+            self.isonfloor = False
+            self.wallsarray = None
 
         def _overlap(self, item):
             pos, sprite = item
-            
-            if sprite == self.player.sprite:
+            x = 0
+            while x < len(self.wallsarray) :
+                if self.wallsarray[x].velocity == item[0] :
+                    return False
+                x += 1
+
+            if sprite == self.player.sprite :
                 return False
 
             left, top, right, bottom = sprite.area
-            gleft, gtop, gright, gbottom = self.player.sprite.area
+            pleft, ptop, pright, pbottom = self.player.sprite.area
             self.floor = item
-            return (gbottom >= top and gright > left and gleft < right and gtop < bottom)
+            return (pbottom >= top and pright > left and pleft < right and ptop < bottom)
 
         def process(self, world, componentsets):
             collitems = [comp for comp in componentsets if self._overlap(comp)]
@@ -154,6 +208,7 @@ if "main.py" and sdlname in contents : #Solely for development
             #Add anything here
         movement = MovementSystem(0, 0, 800, 600)
         floorsystem = FloorSystem(0, 0, 800, 600)
+        wallsystem = WallSystem(0, 0, 800, 600)
         renderer = Renderer(window)
 
         world = sdl2.ext.World()
@@ -166,14 +221,22 @@ if "main.py" and sdlname in contents : #Solely for development
         playersprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(20, 20))
         floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 10))
         floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
+        wallsprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(10, 400))
 
         floor = Floor(world, floorsprite, 5, 200)
         floor2 = Floor(world, floor2sprite, 200, 250)
+
         player = Player(world, playersprite, 20, 100)
 
+        wall = Wall(world, wallsprite, 50, 100)
+
         floorsystem.player = player
+        wallsystem.player = player
 
         floors = [o for o in gc.get_objects() if type(o).__name__ == "Floor"] #Gets all Floor objects from program and puts them in an array
+        walls = [o for o in gc.get_objects() if type(o).__name__ == "Wall"] #Gets all Wall objects from program and puts them in an array
+        floorsystem.wallsarray = walls #SDL2 bug fix purposes
+        wallsystem.floorsarray = floors #SDL2 bug fix purposes
 
 
         while running:
@@ -265,7 +328,7 @@ if "main.py" and sdlname in contents : #Solely for development
                         floor_ = x                              #floors array is equal to the velocity ID of the object hit
                                                                 #then set floor_ to be that object (for resetting logic)
                 left, top, right, bottom = floor_.sprite.area
-                pleft, ptop, pright, pbottom = player.sprite.area
+                pleft, pbottom, pright, pbottom = player.sprite.area
 
                 player.velocity.vy = (top - pbottom)
                 print ("Reset frame velocity = " + str(player.velocity.vy))
