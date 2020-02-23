@@ -111,7 +111,7 @@ if "main.py" and sdlname in contents : #Solely for development
 
         def _overlap(self, item):
             pos, sprite = item
-
+            print (sprite)
             x = 0
             while x < len(self.floorsarray) :
                 if self.floorsarray[x].velocity == item[0] :
@@ -124,7 +124,7 @@ if "main.py" and sdlname in contents : #Solely for development
             left, top, right, bottom = sprite.area
             pleft, ptop, pright, pbottom = self.player.sprite.area
             self.wall = item
-            return ((pleft < right and pright > left) or (pright > left and pleft < right))
+            return (pright > left and pleft < right)
 
         def process(self, world, componentsets):
             collitems = [comp for comp in componentsets if self._overlap(comp)]
@@ -152,6 +152,7 @@ if "main.py" and sdlname in contents : #Solely for development
         def _overlap(self, item):
             pos, sprite = item
             x = 0
+
             while x < len(self.wallsarray) :
                 if self.wallsarray[x].velocity == item[0] :
                     return False
@@ -277,8 +278,6 @@ if "main.py" and sdlname in contents : #Solely for development
                     player.velocity.vx = -10
                 if lr == "right":
                     player.velocity.vx = 10
-
-                print ("VX = " + str(player.velocity.vx))
             
             if jumping == False and walking == False :
                 player.velocity.vx = 0
@@ -349,6 +348,8 @@ if "main.py" and sdlname in contents : #Solely for development
                 print ("IN THE AIR")
                 landed = False
 
+            if wallsystem.touchedwall :
+                print ("yea")
 
             world.process() #Process objects in world
 
