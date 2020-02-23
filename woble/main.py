@@ -74,7 +74,6 @@ if "main.py" and sdlname in contents : #Solely for development
             self.sprite = sprite 
             self.sprite.position = posx, posy
             self.velocity = Velocity()
-            self.id = None
 
     class FloorSystem(sdl2.ext.Applicator):
         def __init__(self, minx, miny, maxx, maxy, isonfloor = False):
