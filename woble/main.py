@@ -106,12 +106,14 @@ if "main.py" and sdlname in contents : #Solely for development
             self.miny = miny
             self.maxx = maxx
             self.maxy = maxy
+            self.leftwall = False
+            self.rightwall = False
             self.touchedwall = touchedwall
             self.floorsarray = None
+            self.middle = None
 
         def _overlap(self, item):
             pos, sprite = item
-            print (sprite)
             x = 0
             while x < len(self.floorsarray) :
                 if self.floorsarray[x].velocity == item[0] :
@@ -123,8 +125,18 @@ if "main.py" and sdlname in contents : #Solely for development
 
             left, top, right, bottom = sprite.area
             pleft, ptop, pright, pbottom = self.player.sprite.area
+            self.middle = (left + right) / 2
+
+            if pleft > self.middle :
+                self.leftwall = True
+                self.rightwall = False
+
+            if pright < self.middle :
+                self.leftwall = False
+                self.rightwall = True
+
             self.wall = item
-            return (pright > left and pleft < right)
+            return (pright >= left and pleft <= right and pbottom <= bottom and ptop >= top)
 
         def process(self, world, componentsets):
             collitems = [comp for comp in componentsets if self._overlap(comp)]
@@ -134,6 +146,8 @@ if "main.py" and sdlname in contents : #Solely for development
                 
             elif collitems == [] :
                 self.touchedwall = False
+                self.leftwall = False
+                self.rightwall = False
 
     class FloorSystem(sdl2.ext.Applicator):
         def __init__(self, minx, miny, maxx, maxy):
@@ -184,7 +198,7 @@ if "main.py" and sdlname in contents : #Solely for development
 
 
         #Constants and variables
-        FPS = 30
+        FPS = 8
         framecount = 0
 
         fallingspeed = 10
@@ -199,6 +213,9 @@ if "main.py" and sdlname in contents : #Solely for development
 
         landed = False
         reset = False
+
+        resetx = False
+        immobilized = True
 
         sdl2.ext.init() #Start SDL2
         window = sdl2.ext.Window("Woble [Alpha]", size=(800, 600))
@@ -215,6 +232,7 @@ if "main.py" and sdlname in contents : #Solely for development
         world = sdl2.ext.World()
         world.add_system(movement)
         world.add_system(floorsystem)
+        world.add_system(wallsystem)
         world.add_system(renderer)
 
         factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE) #Sprite maker
@@ -222,7 +240,7 @@ if "main.py" and sdlname in contents : #Solely for development
         playersprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(20, 20))
         floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 10))
         floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
-        wallsprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(10, 400))
+        wallsprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(25, 400))
 
         floor = Floor(world, floorsprite, 5, 200)
         floor2 = Floor(world, floor2sprite, 200, 250)
@@ -274,14 +292,15 @@ if "main.py" and sdlname in contents : #Solely for development
             """ *** Walking logic *** """
 
             if (jumping == False and walking == True):
-                if lr == "left":
+                if (lr == "left") :
                     player.velocity.vx = -10
-                if lr == "right":
+                    print ("lllllllll")
+                if lr == "right" :
                     player.velocity.vx = 10
+                    print ("rrrrrrrrr")
             
             if jumping == False and walking == False :
                 player.velocity.vx = 0
-
 
             """ *** Jumping logic *** """
 
@@ -348,8 +367,27 @@ if "main.py" and sdlname in contents : #Solely for development
                 print ("IN THE AIR")
                 landed = False
 
+            ###############################################################
+            if immobilized == False and resetx == True : #Immobilizing player after position reset
+                player.velocity.vx = 0
+                immobilized = True
+                resetx = False
+                print("Immobilized")
+
             if wallsystem.touchedwall :
-                print ("yea")
+                wall_ = None
+                for x in walls :
+                    if (x.velocity == wallsystem.itemhit[0]) : #If the velocity ID from a wall object in the
+                        wall_ = x                              #walls array is equal to the velocity ID of the object hit
+                                                               #then set wall_ to be that object (for resetting logic)
+                wleft, wtop, wright, wbottom = wall_.sprite.area
+                pleft, pbottom, pright, pbottom = player.sprite.area
+
+                if wallsystem.leftwall :
+                    player.velocity.vx = wright - pleft
+
+                if wallsystem.rightwall :
+                    player.velocity.vx = pright - wleft
 
             world.process() #Process objects in world
 
