@@ -198,7 +198,7 @@ if "main.py" and sdlname in contents : #Solely for development
 
 
         #Constants and variables
-        FPS = 8
+        FPS = 30
         framecount = 0
 
         fallingspeed = 10
@@ -215,7 +215,7 @@ if "main.py" and sdlname in contents : #Solely for development
         reset = False
 
         resetx = False
-        immobilized = True
+        touchedwall = False
 
         sdl2.ext.init() #Start SDL2
         window = sdl2.ext.Window("Woble [Alpha]", size=(800, 600))
@@ -240,7 +240,7 @@ if "main.py" and sdlname in contents : #Solely for development
         playersprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(20, 20))
         floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 10))
         floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
-        wallsprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(25, 400))
+        wallsprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(35, 400))
 
         floor = Floor(world, floorsprite, 5, 200)
         floor2 = Floor(world, floor2sprite, 200, 250)
@@ -292,13 +292,16 @@ if "main.py" and sdlname in contents : #Solely for development
             """ *** Walking logic *** """
 
             if (jumping == False and walking == True):
-                if (lr == "left") :
+                if (lr == "left" and wallsystem.leftwall == False) :
                     player.velocity.vx = -10
                     print ("lllllllll")
-                if lr == "right" :
+                    touchedwall = False
+
+                if lr == "right" and wallsystem.rightwall == False :
                     player.velocity.vx = 10
                     print ("rrrrrrrrr")
-            
+                    touchedwall = False
+
             if jumping == False and walking == False :
                 player.velocity.vx = 0
 
@@ -368,14 +371,21 @@ if "main.py" and sdlname in contents : #Solely for development
                 landed = False
 
             ###############################################################
-            if immobilized == False and resetx == True : #Immobilizing player after position reset
+
+            if wallsystem.touchedwall and resetx == False :
+                touchedwall = True
+            elif wallsystem.touchedwall and resetx :
+                touchedwall = False
+
+            if resetx == True and touchedwall == True : #Immobilizing player after position reset
                 player.velocity.vx = 0
-                immobilized = True
                 resetx = False
                 print("Immobilized")
+                touchedwall = False
 
-            if wallsystem.touchedwall :
+            if touchedwall and resetx == False :
                 wall_ = None
+                valueset = True
                 for x in walls :
                     if (x.velocity == wallsystem.itemhit[0]) : #If the velocity ID from a wall object in the
                         wall_ = x                              #walls array is equal to the velocity ID of the object hit
@@ -384,10 +394,14 @@ if "main.py" and sdlname in contents : #Solely for development
                 pleft, pbottom, pright, pbottom = player.sprite.area
 
                 if wallsystem.leftwall :
-                    player.velocity.vx = wright - pleft
+                    player.velocity.vx = wright - pright
+                    resetx = True
 
                 if wallsystem.rightwall :
-                    player.velocity.vx = pright - wleft
+                    player.velocity.vx = wleft - pright
+                    resetx = True
+
+                print ("s")
 
             world.process() #Process objects in world
 
