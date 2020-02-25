@@ -242,7 +242,7 @@ if "main.py" and sdlname in contents : #Solely for development
         floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
         wallsprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(35, 400))
 
-        floor = Floor(world, floorsprite, 5, 200)
+        floor = Floor(world, floorsprite, 5, 300)
         floor2 = Floor(world, floor2sprite, 200, 250)
 
         player = Player(world, playersprite, 20, 100)
@@ -293,12 +293,12 @@ if "main.py" and sdlname in contents : #Solely for development
 
             if (jumping == False and walking == True):
                 if (lr == "left" and wallsystem.leftwall == False) :
-                    player.velocity.vx = -10
+                    player.velocity.vx = -5
                     print ("lllllllll")
                     touchedwall = False
 
                 if lr == "right" and wallsystem.rightwall == False :
-                    player.velocity.vx = 10
+                    player.velocity.vx = 5
                     print ("rrrrrrrrr")
                     touchedwall = False
 
@@ -372,18 +372,21 @@ if "main.py" and sdlname in contents : #Solely for development
 
             ###############################################################
 
-            if wallsystem.touchedwall and resetx == False :
+            if wallsystem.touchedwall and resetx == False : #If player is touching the wall and hasn't been reset yet, reset it.
                 touchedwall = True
-            elif wallsystem.touchedwall and resetx :
+                print ("ABOUT TO RESET")
+
+            elif touchedwall and resetx : #Freeing player
                 touchedwall = False
+                print ("FREE TO GO")
 
             if resetx == True and touchedwall == True : #Immobilizing player after position reset
                 player.velocity.vx = 0
                 resetx = False
-                print("Immobilized")
+                print("Immobilized X")
                 touchedwall = False
 
-            if touchedwall and resetx == False :
+            if touchedwall and resetx == False : #Resetting X
                 wall_ = None
                 valueset = True
                 for x in walls :
@@ -394,17 +397,21 @@ if "main.py" and sdlname in contents : #Solely for development
                 pleft, pbottom, pright, pbottom = player.sprite.area
 
                 if wallsystem.leftwall :
-                    player.velocity.vx = wright - pright
+                    player.velocity.vx = wright - pleft
                     resetx = True
 
                 if wallsystem.rightwall :
                     player.velocity.vx = wleft - pright
                     resetx = True
 
-                print ("s")
+                print ("RESET X")
+
+            if wallsystem.touchedwall == False : #If it isn't touching wall, then set resetx to False so that when it does touch a wall, it can reset.
+                resetx = False
 
             world.process() #Process objects in world
-
+            print ("resetx = " + str(resetx))
+            print ("touchedwall = " + str(touchedwall))
             framecount += 1 #Ongoing framecount for movement logic
 
             time.sleep(1/FPS) #Constant framerate
