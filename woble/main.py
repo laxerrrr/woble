@@ -293,12 +293,12 @@ if "main.py" and sdlname in contents : #Solely for development
 
             if (jumping == False and walking == True):
                 if (lr == "left" and wallsystem.leftwall == False) :
-                    player.velocity.vx = -5
+                    player.velocity.vx = -10
                     print ("lllllllll")
                     touchedwall = False
 
                 if lr == "right" and wallsystem.rightwall == False :
-                    player.velocity.vx = 5
+                    player.velocity.vx = 10
                     print ("rrrrrrrrr")
                     touchedwall = False
 
@@ -312,17 +312,6 @@ if "main.py" and sdlname in contents : #Solely for development
                 player.velocity.vy = round((-2/3)* (((-1 * jumpframe) *jumpframe) + 9 * jumpframe))
                 print (player.velocity.vy)
                 jumpframe += 1
-
-            elif (jumping and walking): #Jumping with walking speed
-                print ("Frame of jump is: " + str(jumpframe))
-                player.velocity.vy = round(-2/3* (((-1 * jumpframe) *jumpframe) + 9 * jumpframe))
-                print (player.velocity.vy)
-                jumpframe += 1
-
-                if lr == "left":
-                    player.velocity.vx = -10
-                if lr == "right":
-                    player.velocity.vx = 10
 
             if (jumpframe == 12):
 
