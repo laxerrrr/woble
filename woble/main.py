@@ -72,7 +72,7 @@ if "main.py" and sdlname in contents : #Solely for development
             super(Renderer, self).__init__(window)
     
         def render(self, components):
-            sdl2.ext.fill(self.surface, sdl2.ext.Color(200, 200, 123)) #Background of renderer
+            sdl2.ext.fill(self.surface, sdl2.ext.Color(244, 125, 67)) #Background of renderer
             super(Renderer, self).render(components) #Call SoftwareSpriteRenderSystem.render() when using Render.render()
     
 
@@ -198,6 +198,7 @@ if "main.py" and sdlname in contents : #Solely for development
         jumping = False
 
         walkframe = 0
+        walkingspeed = 15
         walking = False
 
         landed = False
@@ -227,9 +228,9 @@ if "main.py" and sdlname in contents : #Solely for development
         factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE) #Sprite maker
 
         playersprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(20, 20))
-        floorsprite = factory.from_color(sdl2.ext.Color(0, 0, 255), size=(500, 10))
-        floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
-        wallsprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(35, 400))
+        floorsprite = factory.from_color(sdl2.ext.Color(255, 255, 255), size=(500, 10))
+        floor2sprite = factory.from_color(sdl2.ext.Color(255, 255, 255), size=(400, 10))
+        wallsprite = factory.from_color(sdl2.ext.Color(255, 255, 255), size=(35, 400))
 
         floor = GluedObject(world, floorsprite, 5, 300)
         floor2 = GluedObject(world, floor2sprite, 200, 250)
@@ -280,12 +281,12 @@ if "main.py" and sdlname in contents : #Solely for development
 
             if (jumping == False and walking == True):
                 if (lr == "left" and wallsystem.leftwall == False) :
-                    player.velocity.vx = -10
+                    player.velocity.vx = -walkingspeed
                     print ("lllllllll")
                     touchedwall = False
 
                 if lr == "right" and wallsystem.rightwall == False :
-                    player.velocity.vx = 10
+                    player.velocity.vx = walkingspeed
                     print ("rrrrrrrrr")
                     touchedwall = False
 
