@@ -82,13 +82,7 @@ if "main.py" and sdlname in contents : #Solely for development
             self.sprite.position = posx, posy
             self.velocity = Velocity()
             
-    class Floor (sdl2.ext.Entity) : #Floor class
-        def __init__(self, world, sprite, posx = 0, posy = 0):
-            self.sprite = sprite 
-            self.sprite.position = posx, posy
-            self.velocity = Velocity()
-
-    class Wall (sdl2.ext.Entity) : #Wall class
+    class GluedObject (sdl2.ext.Entity) : #Floor class
         def __init__(self, world, sprite, posx = 0, posy = 0):
             self.sprite = sprite 
             self.sprite.position = posx, posy
@@ -115,10 +109,10 @@ if "main.py" and sdlname in contents : #Solely for development
         def _overlap(self, item):
             pos, sprite = item
             x = 0
-            while x < len(self.floorsarray) :
+            """while x < len(self.floorsarray) :
                 if self.floorsarray[x].velocity == item[0] :
                     return False
-                x += 1
+                x += 1"""
 
             if sprite == self.player.sprite:
                 return False
@@ -166,11 +160,6 @@ if "main.py" and sdlname in contents : #Solely for development
         def _overlap(self, item):
             pos, sprite = item
             x = 0
-
-            while x < len(self.wallsarray) :
-                if self.wallsarray[x].velocity == item[0] :
-                    return False
-                x += 1
 
             if sprite == self.player.sprite :
                 return False
@@ -242,22 +231,20 @@ if "main.py" and sdlname in contents : #Solely for development
         floor2sprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(400, 10))
         wallsprite = factory.from_color(sdl2.ext.Color(0, 100, 255), size=(35, 400))
 
-        floor = Floor(world, floorsprite, 5, 300)
-        floor2 = Floor(world, floor2sprite, 200, 250)
+        floor = GluedObject(world, floorsprite, 5, 300)
+        floor2 = GluedObject(world, floor2sprite, 200, 250)
 
         player = Player(world, playersprite, 20, 100)
 
-        wall = Wall(world, wallsprite, 50, 100)
+        wall = GluedObject(world, wallsprite, 50, 100)
 
         floorsystem.player = player
         wallsystem.player = player
 
-        floors = [o for o in gc.get_objects() if type(o).__name__ == "Floor"] #Gets all Floor objects from program and puts them in an array
-        walls = [o for o in gc.get_objects() if type(o).__name__ == "Wall"] #Gets all Wall objects from program and puts them in an array
-        floorsystem.wallsarray = walls #SDL2 bug fix purposes
-        wallsystem.floorsarray = floors #SDL2 bug fix purposes
-
-
+        objects = [o for o in gc.get_objects() if type(o).__name__ == "GluedObject"] #Gets all GluedObject objects from program and puts them in an array
+        floorsystem.wallsarray = objects #SDL2 bug fix purposes
+        wallsystem.floorsarray = objects #SDL2 bug fix purposes
+        print (objects)
         while running:
             print("+++++ START of game loop +++++")
 
@@ -333,7 +320,7 @@ if "main.py" and sdlname in contents : #Solely for development
             elif (floorsystem.isonfloor and landed == False and reset == False) : #Resetting player position to be on top of floor
 
                 floor_ = None
-                for x in floors :
+                for x in objects :
                     if (x.velocity == floorsystem.itemhit[0]) : #If the velocity ID from a floor object in the
                         floor_ = x                              #floors array is equal to the velocity ID of the object hit
                                                                 #then set floor_ to be that object (for resetting logic)
@@ -378,7 +365,7 @@ if "main.py" and sdlname in contents : #Solely for development
             if touchedwall and resetx == False : #Resetting X
                 wall_ = None
                 valueset = True
-                for x in walls :
+                for x in objects :
                     if (x.velocity == wallsystem.itemhit[0]) : #If the velocity ID from a wall object in the
                         wall_ = x                              #walls array is equal to the velocity ID of the object hit
                                                                #then set wall_ to be that object (for resetting logic)
